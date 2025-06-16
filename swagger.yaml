@@ -1,0 +1,264 @@
+openapi: 3.0.0
+info:
+  title: FinCompass API
+  description: API for financial analysis using AetherOnePy integration
+  version: 1.0.0
+  contact:
+    name: FinCompass Support
+    email: support@fincompass.com
+
+servers:
+  - url: http://localhost:7000
+    description: Local development server
+
+paths:
+  /analyze-complete:
+    post:
+      summary: Complete analysis flow
+      description: Creates a case, session, and runs analysis in one call
+      operationId: analyzeComplete
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyzeCompleteRequest'
+      responses:
+        '200':
+          description: Successful analysis
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyzeCompleteResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /cases:
+    get:
+      summary: Get all cases
+      description: Returns a list of all cases created through FinCompass
+      operationId: getCases
+      responses:
+        '200':
+          description: List of cases
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Case'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /ping:
+    get:
+      summary: Health check
+      description: Check if the service is running
+      operationId: ping
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PingResponse'
+
+components:
+  schemas:
+    AnalyzeCompleteRequest:
+      type: object
+      required:
+        - case
+        - session
+        - catalogId
+      properties:
+        case:
+          $ref: '#/components/schemas/CaseRequest'
+        session:
+          $ref: '#/components/schemas/SessionRequest'
+        catalogId:
+          type: integer
+          description: ID of the catalog item to analyze
+          example: 1
+        note:
+          type: string
+          description: Optional note for the analysis
+          example: "Analysis for Q2 2024"
+
+    CaseRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Name of the case
+          example: "Q2 2024 Analysis"
+        email:
+          type: string
+          description: Email associated with the case
+          example: "user@example.com"
+        color:
+          type: string
+          description: Color code for the case
+          example: "#000000"
+        description:
+          type: string
+          description: Description of the case
+          example: "Analysis for Q2 2024 financial data"
+
+    SessionRequest:
+      type: object
+      required:
+        - description
+      properties:
+        description:
+          type: string
+          description: Description of the session
+          example: "Initial analysis session"
+        intention:
+          type: string
+          description: Intention for the session
+          example: "Analyze market trends"
+
+    AnalyzeCompleteResponse:
+      type: object
+      properties:
+        case:
+          $ref: '#/components/schemas/Case'
+        session:
+          $ref: '#/components/schemas/Session'
+        analysis:
+          $ref: '#/components/schemas/Analysis'
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnalysisResult'
+
+    Case:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Internal FinCompass case ID
+        aetherone_case_id:
+          type: integer
+          description: Case ID in AetherOnePy
+        name:
+          type: string
+          description: Name of the case
+        catalog_id:
+          type: integer
+          description: ID of the catalog used for analysis
+        created_at:
+          type: string
+          format: date-time
+          description: When the case was created
+
+    Session:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Session ID
+        caseID:
+          type: integer
+          description: ID of the associated case
+        description:
+          type: string
+          description: Session description
+        intention:
+          type: string
+          description: Session intention
+        created:
+          type: string
+          format: date-time
+          description: When the session was created
+
+    Analysis:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Analysis ID
+        catalogId:
+          type: integer
+          description: ID of the catalog used
+        sessionID:
+          type: integer
+          description: ID of the associated session
+        note:
+          type: string
+          description: Analysis note
+        target_gv:
+          type: integer
+          description: Target GV value
+        created:
+          type: string
+          format: date-time
+          description: When the analysis was created
+
+    AnalysisResult:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Result ID
+        analysis_id:
+          type: integer
+          description: ID of the associated analysis
+        catalog_id:
+          type: integer
+          description: ID of the catalog used
+        description:
+          type: string
+          description: Result description
+        energetic_value:
+          type: integer
+          description: Energetic value
+        gv:
+          type: integer
+          description: GV value
+        level:
+          type: integer
+          description: Level value
+
+    PingResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Service status
+          example: "ok"
+        timestamp:
+          type: string
+          format: date-time
+          description: Current server time
+        service:
+          type: string
+          description: Service name
+          example: "fincompass"
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+        details:
+          type: string
+          description: Detailed error information 

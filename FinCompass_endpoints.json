@@ -1,0 +1,61 @@
+{
+    "info": {
+        "name": "FinCompass API",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Analysis",
+            "item": [
+                {
+                    "name": "Complete Analysis Flow",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/fincompass/analyze-complete",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"case\": {\n        \"name\": \"Test Case\"\n    },\n    \"session\": {\n        \"intention\": \"Test intention\",\n        \"description\": \"Test description\"\n    },\n    \"catalogId\": 1,\n    \"note\": \"Optional test note\"\n}"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Cases",
+            "item": [
+                {
+                    "name": "Get All Cases",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/fincompass/cases"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Health Check",
+            "item": [
+                {
+                    "name": "Ping",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/fincompass/ping"
+                    }
+                }
+            ]
+        }
+    ],
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:7000",
+            "type": "string"
+        }
+    ]
+} 
