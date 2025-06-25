@@ -1,61 +1,68 @@
 {
+    "openapi": "3.0.0",
     "info": {
-        "name": "FinCompass API",
-        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+        "title": "FinCompass Plugin API",
+        "version": "1.0.0",
+        "description": "API endpoints for the FinCompass plugin."
     },
-    "item": [
-        {
-            "name": "Analysis",
-            "item": [
-                {
-                    "name": "Complete Analysis Flow",
-                    "request": {
-                        "method": "POST",
-                        "url": "{{base_url}}/fincompass/analyze-complete",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"case\": {\n        \"name\": \"Test Case\"\n    },\n    \"session\": {\n        \"intention\": \"Test intention\",\n        \"description\": \"Test description\"\n    },\n    \"catalogId\": 1,\n    \"note\": \"Optional test note\"\n}"
-                        }
-                    }
+    "paths": {
+        "/fincompass/api/providers": {
+            "get": {
+                "summary": "Get all providers",
+                "responses": {
+                    "200": {"description": "List of providers"}
                 }
-            ]
+            },
+            "post": {
+                "summary": "Add a new provider",
+                "requestBody": {"required": true},
+                "responses": {"200": {"description": "Provider added"}}
+            }
         },
-        {
-            "name": "Cases",
-            "item": [
-                {
-                    "name": "Get All Cases",
-                    "request": {
-                        "method": "GET",
-                        "url": "{{base_url}}/fincompass/cases"
-                    }
-                }
-            ]
+        "/fincompass/api/providers/{provider_id}/select": {
+            "post": {
+                "summary": "Select a provider",
+                "parameters": [{"name": "provider_id", "in": "path", "required": true, "schema": {"type": "string"}}],
+                "responses": {"200": {"description": "Provider selected"}}
+            }
         },
-        {
-            "name": "Health Check",
-            "item": [
-                {
-                    "name": "Ping",
-                    "request": {
-                        "method": "GET",
-                        "url": "{{base_url}}/fincompass/ping"
-                    }
-                }
-            ]
+        "/fincompass/api/providers/{provider_id}/sync-rates": {
+            "post": {
+                "summary": "Sync rates from external provider into local catalog",
+                "parameters": [{"name": "provider_id", "in": "path", "required": true, "schema": {"type": "string"}}],
+                "responses": {"200": {"description": "Rates synced"}}
+            }
+        },
+        "/fincompass/api/catalogs": {
+            "get": {
+                "summary": "Get all catalogs (syncs from AetherOnePy core)",
+                "responses": {"200": {"description": "List of catalogs"}}
+            }
+        },
+        "/fincompass/api/catalogs/{catalog_id}/select": {
+            "post": {
+                "summary": "Select a catalog",
+                "parameters": [{"name": "catalog_id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+                "responses": {"200": {"description": "Catalog selected"}}
+            }
+        },
+        "/fincompass/api/catalogs/deselect": {
+            "post": {
+                "summary": "Deselect all catalogs",
+                "responses": {"200": {"description": "All catalogs deselected"}}
+            }
+        },
+        "/fincompass/api/intentions": {
+            "get": {"summary": "Get all intentions", "responses": {"200": {"description": "List of intentions"}}},
+            "post": {"summary": "Create a new intention", "responses": {"201": {"description": "Intention created"}}}
+        },
+        "/fincompass/api/intentions/{intention_id}": {
+            "put": {"summary": "Update an intention", "parameters": [{"name": "intention_id", "in": "path", "required": true, "schema": {"type": "integer"}}], "responses": {"200": {"description": "Intention updated"}}},
+            "delete": {"summary": "Delete an intention", "parameters": [{"name": "intention_id", "in": "path", "required": true, "schema": {"type": "integer"}}], "responses": {"200": {"description": "Intention deleted"}}}
+        },
+        "/fincompass/api/intentions": {
+            "get": {"summary": "Get all intentions", "responses": {"200": {"description": "List of intentions"}}},
+            "post": {"summary": "Create a new intention", "responses": {"201": {"description": "Intention created"}}}
         }
-    ],
-    "variable": [
-        {
-            "key": "base_url",
-            "value": "http://localhost:7000",
-            "type": "string"
-        }
-    ]
+    }
 } 
