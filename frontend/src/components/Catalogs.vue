@@ -30,6 +30,7 @@
 </template>
 
 <script>
+import { API_BASE } from '../api';
 export default {
   name: 'FinCompassCatalogs',
   data() {
@@ -44,7 +45,7 @@ export default {
       this.loading = true;
       this.error = '';
       try {
-        const res = await fetch('/fincompass/api/catalogs');
+        const res = await fetch(`${API_BASE}/catalogs`);
         const data = await res.json();
         if (res.ok && data.status === 'success') {
           this.catalogs = data.catalogs || [];
@@ -61,14 +62,14 @@ export default {
       try {
         if (catalog.selected) {
           // Deselect all
-          const res = await fetch('/fincompass/api/catalogs/deselect', { method: 'POST' });
+          const res = await fetch(`${API_BASE}/catalogs/deselect`, { method: 'POST' });
           const data = await res.json();
           if (!res.ok || data.status !== 'success') {
             throw new Error(data.error || 'Failed to deselect.');
           }
         } else {
           // Select this catalog
-          const res = await fetch(`/fincompass/api/catalogs/${catalog.id}/select`, { method: 'POST' });
+          const res = await fetch(`${API_BASE}/catalogs/${catalog.id}/select`, { method: 'POST' });
           const data = await res.json();
           if (!res.ok || data.status !== 'success') {
             throw new Error(data.error || 'Failed to select the catalog.');

@@ -30,6 +30,7 @@
 </template>
 
 <script>
+import { API_BASE } from '../api';
 export default {
   name: 'FinCompassProviders',
   data() {
@@ -44,7 +45,7 @@ export default {
       this.loading = true;
       this.error = '';
       try {
-        const res = await fetch('/fincompass/api/providers');
+        const res = await fetch(`${API_BASE}/providers`);
         const data = await res.json();
         if (res.ok && data.status === 'success') {
           // The API might return providers nested under a 'results' key or directly
@@ -62,14 +63,14 @@ export default {
       try {
         if (provider.selected) {
           // Deselect this provider
-          const res = await fetch(`/fincompass/api/providers/${provider.id}/deselect`, { method: 'POST' });
+          const res = await fetch(`${API_BASE}/providers/${provider.id}/deselect`, { method: 'POST' });
           const data = await res.json();
           if (!res.ok || data.status !== 'success') {
             throw new Error(data.error || 'Failed to deselect provider.');
           }
         } else {
           // Select this provider
-          const res = await fetch(`/fincompass/api/providers/${provider.id}/select`, { method: 'POST' });
+          const res = await fetch(`${API_BASE}/providers/${provider.id}/select`, { method: 'POST' });
           const data = await res.json();
           if (!res.ok || data.status !== 'success') {
             throw new Error(data.error || 'Failed to select provider.');

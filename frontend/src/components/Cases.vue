@@ -29,6 +29,7 @@
 </template>
 
 <script>
+import { API_BASE } from '../api';
 export default {
   name: 'FinCompassCases',
   data() {
@@ -43,7 +44,7 @@ export default {
       this.loading = true;
       this.error = '';
       try {
-        const res = await fetch('/fincompass/api/cases');
+        const res = await fetch(`${API_BASE}/cases`);
         const data = await res.json();
         if (res.ok && data.status === 'success') {
           this.cases = data.cases || [];
@@ -60,14 +61,14 @@ export default {
       try {
         if (caseObj.selected) {
           // Deselect all
-          const res = await fetch('/fincompass/api/cases/deselect', { method: 'POST' });
+          const res = await fetch(`${API_BASE}/cases/deselect`, { method: 'POST' });
           const data = await res.json();
           if (!res.ok || data.status !== 'success') {
             throw new Error(data.error || 'Failed to deselect.');
           }
         } else {
           // Select this case
-          const res = await fetch(`/fincompass/api/cases/${caseObj.id}/select`, { method: 'POST' });
+          const res = await fetch(`${API_BASE}/cases/${caseObj.id}/select`, { method: 'POST' });
           const data = await res.json();
           if (!res.ok || data.status !== 'success') {
             throw new Error(data.error || 'Failed to select the case.');

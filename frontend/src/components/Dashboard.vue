@@ -18,6 +18,7 @@
 </template>
 
 <script>
+import { API_BASE } from '../api';
 export default {
   name: 'FinCompassDashboard',
   data() {
@@ -35,7 +36,7 @@ export default {
     async fetchServers() {
       this.loading = true;
       try {
-        const res = await fetch('/fincompass/api/servers');
+        const res = await fetch(`${API_BASE}/servers`);
         if (res.ok) {
           const data = await res.json();
           this.servers = data.servers || [];

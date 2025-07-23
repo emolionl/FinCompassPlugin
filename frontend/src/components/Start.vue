@@ -75,6 +75,7 @@
 </template>
 
 <script>
+import { API_BASE } from '../api';
 export default {
   name: 'StartMagic',
   data() {
@@ -113,10 +114,10 @@ export default {
       this.fetchingSelections = true;
       // Fetch selected intention, case, provider, catalog from API
       const [intentions, cases, providers, catalogs] = await Promise.all([
-        fetch('/fincompass/api/intentions').then(r => r.json()),
-        fetch('/fincompass/api/cases').then(r => r.json()),
-        fetch('/fincompass/api/providers').then(r => r.json()),
-        fetch('/fincompass/api/catalogs').then(r => r.json())
+        fetch(`${API_BASE}/intentions`).then(r => r.json()),
+        fetch(`${API_BASE}/cases`).then(r => r.json()),
+        fetch(`${API_BASE}/providers`).then(r => r.json()),
+        fetch(`${API_BASE}/catalogs`).then(r => r.json())
       ]);
       this.selected.intention = (intentions.find ? intentions.find(i => i.selected) : (intentions.intentions || []).find(i => i.selected)) || null;
       this.selected.case = (cases.cases || []).find(c => c.selected) || null;
@@ -128,7 +129,7 @@ export default {
       this.loading = true;
       this.result = null;
       try {
-        const res = await fetch('/fincompass/api/start-magic', {
+        const res = await fetch(`${API_BASE}/start-magic`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

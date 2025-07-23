@@ -39,6 +39,7 @@
 </template>
 
 <script>
+import { API_BASE } from '../api';
 export default {
   name: 'FinCompassServers',
   data() {
@@ -57,7 +58,7 @@ export default {
     async fetchServers() {
       this.loading = true;
       try {
-        const res = await fetch('/fincompass/api/servers');
+        const res = await fetch(`${API_BASE}/servers`);
         if (res.ok) {
           const data = await res.json();
           this.servers = data.servers || [];
@@ -76,7 +77,7 @@ export default {
         description: this.newServerDescription,
         api_key: this.newServerApiKey
       };
-      const res = await fetch('/fincompass/api/servers', {
+      const res = await fetch(`${API_BASE}/servers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -101,7 +102,7 @@ export default {
     async saveEdit(server) {
       // Update description
       if (server.description !== this.editDescription) {
-        await fetch(`/fincompass/api/servers/${encodeURIComponent(server.url)}/description`, {
+        await fetch(`${API_BASE}/servers/${encodeURIComponent(server.url)}/description`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ description: this.editDescription })
@@ -109,7 +110,7 @@ export default {
       }
       // Update API key
       if (server.api_key !== this.editApiKey) {
-        await fetch(`/fincompass/api/servers/${encodeURIComponent(server.url)}/api_key`, {
+        await fetch(`${API_BASE}/servers/${encodeURIComponent(server.url)}/api_key`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ api_key: this.editApiKey })
@@ -120,7 +121,7 @@ export default {
     },
     async deleteServer(server) {
       if (!confirm('Delete this server?')) return;
-      await fetch(`/fincompass/api/servers/${encodeURIComponent(server.url)}`, {
+      await fetch(`${API_BASE}/servers/${encodeURIComponent(server.url)}`, {
         method: 'DELETE'
       });
       await this.fetchServers();
@@ -128,10 +129,10 @@ export default {
     async toggleServer(server) {
       if (server.selected) {
         // Deselect all
-        await fetch('/fincompass/api/servers/deselect', { method: 'POST' });
+        await fetch(`${API_BASE}/servers/deselect`, { method: 'POST' });
       } else {
         // Select this server
-        await fetch(`/fincompass/api/servers/${encodeURIComponent(server.url)}/select`, { method: 'POST' });
+        await fetch(`${API_BASE}/servers/${encodeURIComponent(server.url)}/select`, { method: 'POST' });
       }
       await this.fetchServers();
     }

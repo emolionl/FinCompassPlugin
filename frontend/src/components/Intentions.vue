@@ -72,6 +72,7 @@
 </template>
 
 <script>
+import { API_BASE } from '../api';
 export default {
   name: 'FinCompassIntentions',
   data() {
@@ -124,7 +125,7 @@ export default {
     async fetchIntentions() {
       this.loading = true;
       try {
-        const response = await fetch('/fincompass/api/intentions');
+        const response = await fetch(`${API_BASE}/intentions`);
         if (!response.ok) throw new Error('Failed to fetch intentions');
         this.intentions = await response.json();
       } catch (err) {
@@ -173,7 +174,7 @@ export default {
       if (this.modalForm.data.selected) {
         const currentlySelected = this.intentions.find(i => i.selected && i.id !== this.modalForm.data.id);
         if (currentlySelected) {
-           await fetch(`/fincompass/api/intentions/${currentlySelected.id}`, {
+           await fetch(`${API_BASE}/intentions/${currentlySelected.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...currentlySelected, selected: false })
@@ -185,7 +186,7 @@ export default {
     },
     async deleteIntention(id) {
       if (!confirm('Are you sure you want to delete this intention?')) return;
-      await fetch(`/fincompass/api/intentions/${id}`, {
+      await fetch(`${API_BASE}/intentions/${id}`, {
         method: 'DELETE'
       });
       await this.fetchIntentions();
@@ -195,7 +196,7 @@ export default {
       const updates = this.intentions.map(i => {
           const shouldBeSelected = i.id === intentionToSelect.id;
           if (i.selected !== shouldBeSelected) {
-              return fetch(`/fincompass/api/intentions/${i.id}`, {
+              return fetch(`${API_BASE}/intentions/${i.id}`, {
                   method: 'PUT',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ ...i, selected: shouldBeSelected })
@@ -223,13 +224,13 @@ export default {
         };
         let res;
         if (this.modalForm.id) {
-          res = await fetch(`/fincompass/api/intentions/${this.modalForm.id}`, {
+          res = await fetch(`${API_BASE}/intentions/${this.modalForm.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           });
         } else {
-          res = await fetch('/fincompass/api/intentions', {
+          res = await fetch(`${API_BASE}/intentions`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
