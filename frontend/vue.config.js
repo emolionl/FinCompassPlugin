@@ -2,14 +2,14 @@ const { defineConfig } = require('@vue/cli-service')
 module.exports = defineConfig({
   transpileDependencies: true,
   outputDir: 'dist',
-  publicPath: '/fincompass/',
+  publicPath: '/fincompassplugin/',
   devServer: {
     historyApiFallback: {
-      index: '/fincompass/index.html'
+      index: '/fincompassplugin/index.html'
     },
     port: 8080,
     proxy: {
-      '/fincompass': {
+      '/fincompassplugin': {
         target: 'http://127.0.0.1:7000',
         changeOrigin: true,
         secure: false,
