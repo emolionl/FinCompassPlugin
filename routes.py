@@ -679,11 +679,13 @@ def create_blueprint():
 
 
             # --- PLUGIN DB: Get selected server and provider (for remote schedule) ---
-            
             print(f"[DEBUG] highest: {highest}")
             selected_server = db.get_selected_server()  # plugin DB
             print(f"[DEBUG] selected_server: {selected_server}")
-            provider = db.get_provider_with_url_by_exchange_id(selected_server['id'], plugin_provider.get('exchange_id', ''))  # plugin DB
+            provider = db.get_provider_by_server_and_provider_id(
+                selected_server['id'],
+                plugin_provider['server_provider_id']
+            )  # plugin DB
             print(f"[DEBUG] provider: {provider}")
             if not provider or not provider.get('server_url'):
                 return jsonify({'status': 'error', 'error': 'Provider or server URL not found in database.'}), 500

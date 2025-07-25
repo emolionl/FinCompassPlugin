@@ -480,3 +480,18 @@ class FinCompassDatabase:
             cursor = conn.cursor()
             cursor.execute('SELECT * FROM providers')
             return [dict(row) for row in cursor.fetchall()]
+
+    def get_provider_by_server_and_provider_id(self, server_id: int, server_provider_id: str) -> dict:
+        """Get a provider by server_id and server_provider_id, including the server's URL."""
+        with self._get_connection() as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT p.*, s.url as server_url
+                FROM providers p
+                JOIN servers s ON p.server_id = s.id
+                WHERE p.server_id = ? AND p.server_provider_id = ?
+                LIMIT 1
+            ''', (server_id, server_provider_id))
+            row = cursor.fetchone()
+            return dict(row) if row else None
