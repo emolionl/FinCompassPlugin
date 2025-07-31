@@ -1,0 +1,7 @@
+{
+    "name": "FinCompass",
+    "author": "Davor Radic",
+    "description": "Financial Compass Plugin",
+    "ui": "fincompassplugin",
+    "image": "assets/images/fincompass.png"
+}
