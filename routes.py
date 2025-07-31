@@ -39,13 +39,20 @@ def push_schedule_to_external_api(schedule: dict) -> dict:
         raise Exception(f"External API error: {response.status_code} {response.text}")
     return response.json()
 
-def create_blueprint():
+def create_blueprint(app_instance=None):
     print("[DEBUG] Creating FinCompass blueprint...")
     fincompass_blueprint = Blueprint('fincompass', __name__)
     
     # Initialize database
     db_path = os.path.join(os.path.dirname(__file__), 'fincompass.db')
     db = FinCompassDatabase(db_path)
+    
+    # Get case_dao reference - use app_instance if provided, otherwise fall back to current_app
+    def get_case_dao():
+        if app_instance and hasattr(app_instance, 'case_dao'):
+            return app_instance.case_dao
+        else:
+            return current_app.case_dao
 
     AETHERONE_API_URL = "http://localhost:7000"
 
@@ -124,7 +131,7 @@ def create_blueprint():
                 return jsonify({"error": "Catalog ID is required"}), 400
 
             # Create case in AetherOnePy
-            case = current_app.case_dao.create_case(case_data['name'])
+            case = get_case_dao().create_case(case_data['name'])
             if not case:
                 return jsonify({"error": "Failed to create case"}), 500
 
@@ -134,7 +141,7 @@ def create_blueprint():
                 return jsonify({"error": "Failed to store case"}), 500
 
             # Create session in AetherOnePy
-            session = current_app.case_dao.create_session(
+            session = get_case_dao().create_session(
                 case.id,
                 session_data.get('intention', ''),
                 session_data.get('description', '')
@@ -143,7 +150,7 @@ def create_blueprint():
                 return jsonify({"error": "Failed to create session"}), 500
 
             # Create analysis
-            analysis = current_app.case_dao.create_analysis(
+            analysis = get_case_dao().create_analysis(
                 session.id,
                 catalog_id,
                 note
@@ -152,7 +159,7 @@ def create_blueprint():
                 return jsonify({"error": "Failed to create analysis"}), 500
 
             # Run analysis
-            results = current_app.case_dao.run_analysis(analysis.id)
+            results = get_case_dao().run_analysis(analysis.id)
             if not results:
                 return jsonify({"error": "Failed to run analysis"}), 500
 
@@ -383,7 +390,7 @@ def create_blueprint():
         """
         try:
             # Convert Catalog objects to dicts for sync_catalogs
-            core_catalogs = [c.to_dict() if hasattr(c, 'to_dict') else {'id': c.id, 'name': c.name} for c in current_app.case_dao.list_catalogs()]
+            core_catalogs = [c.to_dict() if hasattr(c, 'to_dict') else {'id': c.id, 'name': c.name} for c in get_case_dao().list_catalogs()]
             db.sync_catalogs(core_catalogs)
             local_catalogs = db.get_catalogs()
             return jsonify({"status": "success", "catalogs": local_catalogs})
@@ -469,7 +476,7 @@ def create_blueprint():
                 return jsonify({"status": "error", "error": f"Invalid JSON from upstream: {e}"}), 502
 
             # 3. Use main DAO to check/create catalog
-            dao = current_app.case_dao
+            dao = get_case_dao()
             catalog = dao.get_catalog_by_name(exchange_id)
             if not catalog:
                 from domains.aetherOneDomains import Catalog
@@ -632,19 +639,19 @@ def create_blueprint():
 
             # --- MAIN AETHERONE DB: Create session ---
             session_obj = AOSession(plugin_intention['intention'], plugin_intention.get('description', ''), aetherone_case_id)
-            current_app.case_dao.insert_session(session_obj)  # main DB
+            get_case_dao().insert_session(session_obj)  # main DB
             aetherone_session = session_obj  # Now has .id set
             print(f"[DEBUG] aetherone_session: {aetherone_session}")
 
             # --- MAIN AETHERONE DB: Create analysis ---
             analysis_obj = AOAnalysis('', aetherone_session.id)
             analysis_obj.catalogId = aetherone_catalog_id
-            current_app.case_dao.insert_analysis(analysis_obj)  # main DB
+            get_case_dao().insert_analysis(analysis_obj)  # main DB
             aetherone_analysis = analysis_obj  # Now has .id set
             print(f"[DEBUG] aetherone_analysis: {aetherone_analysis}")
 
             # --- MAIN AETHERONE DB: Run analysis (get rates, call analyze, insert results) ---
-            rates_list = current_app.case_dao.list_rates_from_catalog(aetherone_catalog_id)  # main DB
+            rates_list = get_case_dao().list_rates_from_catalog(aetherone_catalog_id)  # main DB
             # Create HotbitsService instance locally (independent)
             PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..'))
             hotbits = HotbitsService(HotbitsSource.WEBCAM, os.path.join(PROJECT_ROOT, "hotbits"), db, DummyMain())
@@ -652,11 +659,11 @@ def create_blueprint():
                 aetherone_analysis.id,
                 rates_list,
                 hotbits,
-                current_app.case_dao.get_setting('analysisAlwaysCheckGV'),
-                current_app.case_dao.get_setting('analysisAdvanced')
+                get_case_dao().get_setting('analysisAlwaysCheckGV'),
+                get_case_dao().get_setting('analysisAdvanced')
             )
             #print(f"[DEBUG] enhanced_rates: {[r.to_dict() for r in enhanced_rates]}")
-            current_app.case_dao.insert_rates_for_analysis(enhanced_rates)  # main DB
+            get_case_dao().insert_rates_for_analysis(enhanced_rates)  # main DB
             results = [r.to_dict() for r in enhanced_rates]
             print(f"[DEBUG] results: {results}")
 
