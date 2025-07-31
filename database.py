@@ -1,5 +1,6 @@
 import sqlite3
 import os
+import json
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 
@@ -495,3 +496,36 @@ class FinCompassDatabase:
             ''', (server_id, server_provider_id))
             row = cursor.fetchone()
             return dict(row) if row else None
+
+    def loadSettings(self) -> dict:
+        """Load settings from the main AetherOnePy settings file."""
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..'))
+        json_file_path = os.path.join(project_root, "data", "settings.json")
+        if os.path.isfile(json_file_path):
+            with open(json_file_path, 'r') as f:
+                settings = json.load(f)
+                self.ensure_settings_defaults(settings)
+                return settings
+        else:
+            with open(json_file_path, 'w') as f:
+                settings = {'created': datetime.now().isoformat()}
+                self.ensure_settings_defaults(settings)
+                json.dump(settings, f)
+            return settings
+
+    def ensure_settings_defaults(self, settings: dict):
+        """Ensure default settings exist."""
+        defaults = {
+            'analysisAlwaysCheckGV': True,
+            'analysisAdvanced': False
+        }
+        for key, value in defaults.items():
+            if key not in settings:
+                settings[key] = value
+
+    def get_setting(self, key: str):
+        """Get a setting value by key."""
+        try:
+            return self.loadSettings()[key]
+        except:
+            return None
