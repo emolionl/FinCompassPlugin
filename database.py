@@ -67,6 +67,10 @@ class FinCompassDatabase:
                 cursor.execute('ALTER TABLE intentions ADD COLUMN hold_minutes INTEGER DEFAULT 0')
             if 'amount' not in columns:
                 cursor.execute('ALTER TABLE intentions ADD COLUMN amount FLOAT DEFAULT 0')
+            if 'stop_loss_percentage' not in columns:
+                cursor.execute('ALTER TABLE intentions ADD COLUMN stop_loss_percentage FLOAT DEFAULT 0')
+            if 'take_profit_percentage' not in columns:
+                cursor.execute('ALTER TABLE intentions ADD COLUMN take_profit_percentage FLOAT DEFAULT 0')
 
             # Create intention_schedules table
             cursor.execute('''
@@ -202,16 +206,16 @@ class FinCompassDatabase:
                 return dict(zip(columns, row))
             return None
 
-    def create_intention(self, intention: str, description: str = None, selected: bool = False, hold_minutes: int = 0, amount: float = 0) -> Dict[str, Any]:
+    def create_intention(self, intention: str, description: str = None, selected: bool = False, hold_minutes: int = 0, amount: float = 0, stop_loss_percentage: float = 0, take_profit_percentage: float = 0) -> Dict[str, Any]:
         """Create a new intention."""
         with self._get_connection() as conn:
             cursor = conn.cursor()
             if selected:
                 cursor.execute('UPDATE intentions SET selected = 0')
             cursor.execute('''
-                INSERT INTO intentions (intention, description, selected, hold_minutes, amount)
-                VALUES (?, ?, ?, ?, ?)
-            ''', (intention, description, int(selected), hold_minutes, amount))
+                INSERT INTO intentions (intention, description, selected, hold_minutes, amount, stop_loss_percentage, take_profit_percentage)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', (intention, description, int(selected), hold_minutes, amount, stop_loss_percentage, take_profit_percentage))
             conn.commit()
             cursor.execute('SELECT * FROM intentions WHERE id = ?', (cursor.lastrowid,))
             columns = [description[0] for description in cursor.description]
@@ -225,7 +229,7 @@ class FinCompassDatabase:
             columns = [description[0] for description in cursor.description]
             return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
-    def update_intention(self, intention_id: int, intention: str = None, description: str = None, selected: bool = None, hold_minutes: int = None, amount: float = None) -> None:
+    def update_intention(self, intention_id: int, intention: str = None, description: str = None, selected: bool = None, hold_minutes: int = None, amount: float = None, stop_loss_percentage: float = None, take_profit_percentage: float = None) -> None:
         """Update an intention."""
         with self._get_connection() as conn:
             cursor = conn.cursor()
@@ -241,6 +245,10 @@ class FinCompassDatabase:
                 cursor.execute('UPDATE intentions SET hold_minutes = ? WHERE id = ?', (hold_minutes, intention_id))
             if amount is not None:
                 cursor.execute('UPDATE intentions SET amount = ? WHERE id = ?', (amount, intention_id))
+            if stop_loss_percentage is not None:
+                cursor.execute('UPDATE intentions SET stop_loss_percentage = ? WHERE id = ?', (stop_loss_percentage, intention_id))
+            if take_profit_percentage is not None:
+                cursor.execute('UPDATE intentions SET take_profit_percentage = ? WHERE id = ?', (take_profit_percentage, intention_id))
             conn.commit()
 
     def delete_intention(self, intention_id: int) -> None:

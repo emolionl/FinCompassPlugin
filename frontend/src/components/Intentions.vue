@@ -61,6 +61,16 @@
             </div>
             <small>How long to hold before selling (used as default for schedules).</small>
           </div>
+          <div class="form-group">
+            <label for="stopLoss">Stop Loss Percentage</label>
+            <input type="number" min="0" max="100" step="0.1" id="stopLoss" v-model.number="modalForm.stop_loss_percentage" placeholder="e.g. 5.0" />
+            <small>Percentage loss at which to sell (e.g., 5.0 for 5%).</small>
+          </div>
+          <div class="form-group">
+            <label for="takeProfit">Take Profit Percentage</label>
+            <input type="number" min="0" max="1000" step="0.1" id="takeProfit" v-model.number="modalForm.take_profit_percentage" placeholder="e.g. 15.0" />
+            <small>Percentage gain at which to sell (e.g., 15.0 for 15%).</small>
+          </div>
           <div class="modal-actions">
             <button type="submit">{{ modalForm.isEdit ? 'Save Changes' : 'Create' }}</button>
             <button type="button" @click="closeModal">Cancel</button>
@@ -90,7 +100,10 @@ export default {
           selected: false,
           buy_datetime: '',
           sell_datetime: '',
-          hold_minutes: 0
+          hold_minutes: 0,
+          amount: 0,
+          stop_loss_percentage: 0,
+          take_profit_percentage: 0
         }
       },
       holdValue: 0,
@@ -141,7 +154,9 @@ export default {
         description: '',
         selected: false,
         hold_minutes: 0,
-        amount: 0
+        amount: 0,
+        stop_loss_percentage: 0,
+        take_profit_percentage: 0
       };
       this.showModal = true;
     },
@@ -152,7 +167,9 @@ export default {
         description: intention.description,
         selected: intention.selected,
         hold_minutes: intention.hold_minutes || 0,
-        amount: intention.amount || 0
+        amount: intention.amount || 0,
+        stop_loss_percentage: intention.stop_loss_percentage || 0,
+        take_profit_percentage: intention.take_profit_percentage || 0
       };
       this.showModal = true;
     },
@@ -220,7 +237,9 @@ export default {
           description: this.modalForm.description,
           selected: this.modalForm.selected,
           hold_minutes,
-          amount: this.modalForm.amount
+          amount: this.modalForm.amount,
+          stop_loss_percentage: this.modalForm.stop_loss_percentage,
+          take_profit_percentage: this.modalForm.take_profit_percentage
         };
         let res;
         if (this.modalForm.id) {
@@ -342,7 +361,8 @@ export default {
   color: #b0b0b0;
 }
 .form-group input[type="text"], 
-.form-group input[type="password"] {
+.form-group input[type="password"],
+.form-group input[type="number"] {
   width: 100%;
   padding: 0.75rem;
   border-radius: 4px;

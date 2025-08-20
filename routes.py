@@ -424,7 +424,9 @@ def create_blueprint(app_instance=None):
             description=data.get('description'),
             selected=data.get('selected'),
             hold_minutes=data.get('hold_minutes', 0),
-            amount=data.get('amount', 0)
+            amount=data.get('amount', 0),
+            stop_loss_percentage=data.get('stop_loss_percentage', 0),
+            take_profit_percentage=data.get('take_profit_percentage', 0)
         )
         return jsonify(intention), 201
 
@@ -437,7 +439,9 @@ def create_blueprint(app_instance=None):
             description=data.get('description'),
             selected=data.get('selected'),
             hold_minutes=data.get('hold_minutes'),
-            amount=data.get('amount')
+            amount=data.get('amount'),
+            stop_loss_percentage=data.get('stop_loss_percentage'),
+            take_profit_percentage=data.get('take_profit_percentage')
         )
         return jsonify({'status': 'success'})
 
@@ -708,7 +712,9 @@ def create_blueprint(app_instance=None):
                 'sell_all': False,
                 'side': 'buy',
                 'symbol': symbol,
-                'social_key': ''  # TODO: fetch from SocialPlugin
+                'social_key': '',  # TODO: fetch from SocialPlugin
+                'stop_loss_percentage': plugin_intention.get('stop_loss_percentage', 0),
+                'take_profit_percentage': plugin_intention.get('take_profit_percentage', 0)
             }
             api_key = selected_server.get('api_key')
             if not api_key:
