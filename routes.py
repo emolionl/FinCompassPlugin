@@ -693,7 +693,7 @@ def create_blueprint(app_instance=None):
             
             # Dynamic timing logic
             if plugin_intention.get('dynamic_sell_timing', False):
-                from services.analyzeService import analyze_timing_for_symbol
+                from .timing_analysis import analyze_timing_for_symbol
                 min_hold = plugin_intention.get('min_hold_minutes', 30)
                 max_hold = plugin_intention.get('max_hold_minutes', 1440)  # Default 1 day
                 
@@ -782,7 +782,9 @@ def create_blueprint(app_instance=None):
                 'buy_schedule_id': buy_schedule_id,
                 'sell_schedule_id': sell_schedule_id,
                 'server_schedule_buy_id': schedule_record.get('server_schedule_buy_id'),
-                'server_schedule_sell_id': schedule_record.get('server_schedule_sell_id')
+                'server_schedule_sell_id': schedule_record.get('server_schedule_sell_id'),
+                'buy_payload': payload,
+                'sell_payload': sell_payload
             })
         except Exception as e:
             return jsonify({'status': 'error', 'error': str(e)}), 500

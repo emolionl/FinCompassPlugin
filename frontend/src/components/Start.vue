@@ -13,7 +13,10 @@
             <template v-if="selected.intention.amount && selected.intention.amount > 0">
               for <b>{{ selected.intention.amount }}</b> USD
             </template>
-            <template v-if="selected.intention.hold_minutes && selected.intention.hold_minutes > 0">
+            <template v-if="selected.intention.dynamic_sell_timing">
+              , holding for <b>most profitable non-linear time</b>
+            </template>
+            <template v-else-if="selected.intention.hold_minutes && selected.intention.hold_minutes > 0">
               , holding for <b>{{ holdPeriodString(selected.intention.hold_minutes) }}</b>
             </template>.
           </span>
@@ -140,6 +143,13 @@ export default {
           })
         });
         const data = await res.json();
+        console.log('Full start-magic response:', data);
+        if (data.buy_payload) {
+          console.log('Buy payload sent to server:', data.buy_payload);
+        }
+        if (data.sell_payload) {
+          console.log('Sell payload sent to server:', data.sell_payload);
+        }
         this.result = data;
       } catch (e) {
         this.result = { status: 'error', error: e.message };
