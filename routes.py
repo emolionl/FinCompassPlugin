@@ -426,7 +426,10 @@ def create_blueprint(app_instance=None):
             hold_minutes=data.get('hold_minutes', 0),
             amount=data.get('amount', 0),
             stop_loss_percentage=data.get('stop_loss_percentage', 0),
-            take_profit_percentage=data.get('take_profit_percentage', 0)
+            take_profit_percentage=data.get('take_profit_percentage', 0),
+            dynamic_sell_timing=data.get('dynamic_sell_timing', False),
+            min_hold_minutes=data.get('min_hold_minutes', 0),
+            max_hold_minutes=data.get('max_hold_minutes', 0)
         )
         return jsonify(intention), 201
 
@@ -441,7 +444,10 @@ def create_blueprint(app_instance=None):
             hold_minutes=data.get('hold_minutes'),
             amount=data.get('amount'),
             stop_loss_percentage=data.get('stop_loss_percentage'),
-            take_profit_percentage=data.get('take_profit_percentage')
+            take_profit_percentage=data.get('take_profit_percentage'),
+            dynamic_sell_timing=data.get('dynamic_sell_timing'),
+            min_hold_minutes=data.get('min_hold_minutes'),
+            max_hold_minutes=data.get('max_hold_minutes')
         )
         return jsonify({'status': 'success'})
 
@@ -684,9 +690,29 @@ def create_blueprint(app_instance=None):
             # --- Calculate buy/sell times ---
             now = datetime.datetime.utcnow()
             buy_time = now.isoformat(timespec='seconds') + 'Z'
-            sell_time = (now + datetime.timedelta(minutes=hold_minutes)).isoformat(timespec='seconds') + 'Z'
+            
+            # Dynamic timing logic
+            if plugin_intention.get('dynamic_sell_timing', False):
+                from services.analyzeService import analyze_timing_for_symbol
+                min_hold = plugin_intention.get('min_hold_minutes', 30)
+                max_hold = plugin_intention.get('max_hold_minutes', 1440)  # Default 1 day
+                
+                timing_analysis = analyze_timing_for_symbol(
+                    symbol, 
+                    min_hold, 
+                    max_hold, 
+                    enhanced_rates, 
+                    hotbits
+                )
+                optimal_hold_minutes = timing_analysis.get('optimal_hold_minutes', hold_minutes)
+                print(f"[DEBUG] Dynamic timing analysis: {timing_analysis}")
+            else:
+                optimal_hold_minutes = hold_minutes
+            
+            sell_time = (now + datetime.timedelta(minutes=optimal_hold_minutes)).isoformat(timespec='seconds') + 'Z'
             print(f"[DEBUG] buy_time: {buy_time}")
             print(f"[DEBUG] sell_time: {sell_time}")
+            print(f"[DEBUG] optimal_hold_minutes: {optimal_hold_minutes}")
 
 
             # --- PLUGIN DB: Get selected server and provider (for remote schedule) ---

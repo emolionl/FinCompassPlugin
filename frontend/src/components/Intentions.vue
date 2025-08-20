@@ -71,6 +71,34 @@
             <input type="number" min="0" max="1000" step="0.1" id="takeProfit" v-model.number="modalForm.take_profit_percentage" placeholder="e.g. 15.0" />
             <small>Percentage gain at which to sell (e.g., 15.0 for 15%).</small>
           </div>
+          <div class="form-group checkbox-group">
+            <input type="checkbox" id="dynamicTiming" v-model="modalForm.dynamic_sell_timing" />
+            <label for="dynamicTiming">Use AI-driven sell timing</label>
+          </div>
+          <div v-if="modalForm.dynamic_sell_timing" class="form-group">
+            <label>Sell Timing Range</label>
+            <div class="timing-range">
+              <div class="timing-input-group">
+                <label>Min Hold Time:</label>
+                <input type="number" min="0" v-model.number="minHoldValue" placeholder="e.g. 30" style="width: 80px;" />
+                <select v-model="minHoldUnit">
+                  <option value="minutes">Minutes</option>
+                  <option value="hours">Hours</option>
+                  <option value="days">Days</option>
+                </select>
+              </div>
+              <div class="timing-input-group">
+                <label>Max Hold Time:</label>
+                <input type="number" min="0" v-model.number="maxHoldValue" placeholder="e.g. 3" style="width: 80px;" />
+                <select v-model="maxHoldUnit">
+                  <option value="minutes">Minutes</option>
+                  <option value="hours">Hours</option>
+                  <option value="days">Days</option>
+                </select>
+              </div>
+            </div>
+            <small>AI will choose optimal sell time within this range based on market analysis.</small>
+          </div>
           <div class="modal-actions">
             <button type="submit">{{ modalForm.isEdit ? 'Save Changes' : 'Create' }}</button>
             <button type="button" @click="closeModal">Cancel</button>
@@ -103,11 +131,18 @@ export default {
           hold_minutes: 0,
           amount: 0,
           stop_loss_percentage: 0,
-          take_profit_percentage: 0
+          take_profit_percentage: 0,
+          dynamic_sell_timing: false,
+          min_hold_minutes: 0,
+          max_hold_minutes: 0
         }
       },
       holdValue: 0,
       holdUnit: 'minutes',
+      minHoldValue: 0,
+      minHoldUnit: 'minutes',
+      maxHoldValue: 0,
+      maxHoldUnit: 'minutes',
     };
   },
   watch: {
@@ -128,6 +163,40 @@ export default {
         } else {
           this.holdValue = 0;
           this.holdUnit = 'minutes';
+        }
+
+        // Convert min_hold_minutes to value/unit
+        if (newVal && typeof newVal.min_hold_minutes === 'number') {
+          if (newVal.min_hold_minutes % (60 * 24) === 0) {
+            this.minHoldValue = newVal.min_hold_minutes / (60 * 24);
+            this.minHoldUnit = 'days';
+          } else if (newVal.min_hold_minutes % 60 === 0) {
+            this.minHoldValue = newVal.min_hold_minutes / 60;
+            this.minHoldUnit = 'hours';
+          } else {
+            this.minHoldValue = newVal.min_hold_minutes;
+            this.minHoldUnit = 'minutes';
+          }
+        } else {
+          this.minHoldValue = 0;
+          this.minHoldUnit = 'minutes';
+        }
+
+        // Convert max_hold_minutes to value/unit
+        if (newVal && typeof newVal.max_hold_minutes === 'number') {
+          if (newVal.max_hold_minutes % (60 * 24) === 0) {
+            this.maxHoldValue = newVal.max_hold_minutes / (60 * 24);
+            this.maxHoldUnit = 'days';
+          } else if (newVal.max_hold_minutes % 60 === 0) {
+            this.maxHoldValue = newVal.max_hold_minutes / 60;
+            this.maxHoldUnit = 'hours';
+          } else {
+            this.maxHoldValue = newVal.max_hold_minutes;
+            this.maxHoldUnit = 'minutes';
+          }
+        } else {
+          this.maxHoldValue = 0;
+          this.maxHoldUnit = 'minutes';
         }
       },
       immediate: true,
@@ -156,7 +225,10 @@ export default {
         hold_minutes: 0,
         amount: 0,
         stop_loss_percentage: 0,
-        take_profit_percentage: 0
+        take_profit_percentage: 0,
+        dynamic_sell_timing: false,
+        min_hold_minutes: 0,
+        max_hold_minutes: 0
       };
       this.showModal = true;
     },
@@ -169,7 +241,10 @@ export default {
         hold_minutes: intention.hold_minutes || 0,
         amount: intention.amount || 0,
         stop_loss_percentage: intention.stop_loss_percentage || 0,
-        take_profit_percentage: intention.take_profit_percentage || 0
+        take_profit_percentage: intention.take_profit_percentage || 0,
+        dynamic_sell_timing: intention.dynamic_sell_timing || false,
+        min_hold_minutes: intention.min_hold_minutes || 0,
+        max_hold_minutes: intention.max_hold_minutes || 0
       };
       this.showModal = true;
     },
@@ -232,6 +307,17 @@ export default {
         if (this.holdUnit === 'days') hold_minutes = this.holdValue * 24 * 60;
         else if (this.holdUnit === 'hours') hold_minutes = this.holdValue * 60;
         else hold_minutes = this.holdValue;
+
+        let min_hold_minutes = 0;
+        if (this.minHoldUnit === 'days') min_hold_minutes = this.minHoldValue * 24 * 60;
+        else if (this.minHoldUnit === 'hours') min_hold_minutes = this.minHoldValue * 60;
+        else min_hold_minutes = this.minHoldValue;
+
+        let max_hold_minutes = 0;
+        if (this.maxHoldUnit === 'days') max_hold_minutes = this.maxHoldValue * 24 * 60;
+        else if (this.maxHoldUnit === 'hours') max_hold_minutes = this.maxHoldValue * 60;
+        else max_hold_minutes = this.maxHoldValue;
+
         const payload = {
           intention: this.modalForm.intention,
           description: this.modalForm.description,
@@ -239,7 +325,10 @@ export default {
           hold_minutes,
           amount: this.modalForm.amount,
           stop_loss_percentage: this.modalForm.stop_loss_percentage,
-          take_profit_percentage: this.modalForm.take_profit_percentage
+          take_profit_percentage: this.modalForm.take_profit_percentage,
+          dynamic_sell_timing: this.modalForm.dynamic_sell_timing,
+          min_hold_minutes,
+          max_hold_minutes
         };
         let res;
         if (this.modalForm.id) {
@@ -407,5 +496,30 @@ export default {
 }
 .hold-period-inputs select {
   margin-right: 1rem;
+}
+.timing-range {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.timing-input-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.timing-input-group label {
+  min-width: 100px;
+  margin-bottom: 0;
+  font-size: 0.9rem;
+}
+.timing-input-group input {
+  margin-right: 0.5rem;
+}
+.timing-input-group select {
+  background: #181a1b;
+  color: #e0e0e0;
+  border: 1px solid #40444b;
+  border-radius: 4px;
+  padding: 0.5rem;
 }
 </style> 
