@@ -14,7 +14,7 @@
               for <b>{{ selected.intention.amount }}</b> USD
             </template>
             <template v-if="selected.intention.dynamic_sell_timing">
-              , holding for <b>most profitable non-linear time</b>
+              , with the holding time mystically determined at <b>random</b> for the most profit I press Start Magic
             </template>
             <template v-else-if="selected.intention.hold_minutes && selected.intention.hold_minutes > 0">
               , holding for <b>{{ holdPeriodString(selected.intention.hold_minutes) }}</b>
