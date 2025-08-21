@@ -14,10 +14,16 @@
               for <b>{{ selected.intention.amount }}</b> USD
             </template>
             <template v-if="selected.intention.dynamic_sell_timing">
-              , with the holding time mystically determined at <b>random</b> for the most profit I press Start Magic
+              , with the holding time mystically determined at <b>random</b> for the most profit
             </template>
             <template v-else-if="selected.intention.hold_minutes && selected.intention.hold_minutes > 0">
               , holding for <b>{{ holdPeriodString(selected.intention.hold_minutes) }}</b>
+            </template>
+            <template v-if="selected.intention.stop_loss_percentage && selected.intention.stop_loss_percentage > 0">
+              , with <b>{{ selected.intention.stop_loss_percentage }}%</b> stop loss
+            </template>
+            <template v-if="selected.intention.take_profit_percentage && selected.intention.take_profit_percentage > 0">
+              and <b>{{ selected.intention.take_profit_percentage }}%</b> take profit
             </template>.
           </span>
         </div>
